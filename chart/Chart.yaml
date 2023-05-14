@@ -1,0 +1,5 @@
+name: polis
+description: A Helm Chart for polis
+version: 0.0.1
+apiVersion: v1
+home: https://github.com/compdemocracy/polis

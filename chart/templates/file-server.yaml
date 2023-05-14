@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    polis.service: file-server
+  name: file-server
+spec:
+  {{- if not .Values.fileServer.autoscaling.enabled }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      polis.service: file-server
+  template:
+    metadata:
+      labels:
+        polis.service: file-server
+    spec:
+      containers:
+        - image: "{{ .Values.registry }}/{{ .Values.fileServer.image.repository }}:{{ .Values.fileServer.image.tag }}"
+          imagePullPolicy: Always
+          name: file-server
+          env:
+            - name: PORT
+              value: "8080"
+            - name: SERVICE_URL
+              value: "https://{{ .Values.hostname }}"
+---
+{{- if .Values.fileServer.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: file-server
+spec:
+  maxReplicas: {{ .Values.fileServer.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.fileServer.autoscaling.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: file-server
+  targetCPUUtilizationPercentage: {{ .Values.fileServer.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    polis.service: file-server
+  name: file-server
+spec:
+  type: ClusterIP
+  selector:
+    polis.service: file-server
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080

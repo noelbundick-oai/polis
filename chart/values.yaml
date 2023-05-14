@@ -1,0 +1,151 @@
+registry: docker.io
+hostname: polis.example.com
+
+db:
+  host: postgres
+  database: polis-dev
+  user: postgres
+  password: oiPorg3Nrz0yqDLE
+
+polisServer:
+  image: 
+    repository: compdem/polis-server
+    tag: dev
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+  env:
+    ### General Settings
+    # an array of user UUIDs for site admins. These users will have moderator capabilities on all conversations hosted on the site
+    ADMIN_UIDS: "[]"
+
+    # comma-separated list of email services to use
+    EMAIL_TRANSPORT_TYPES: maildev
+
+    # Used by Winston.js in the API server to determine how much logging to output. Reasonable values are "debug", "info", and "error"
+    SERVER_LOG_LEVEL: "info"
+
+    ### Database
+    # (optional) Database replica for reads
+    READ_ONLY_DATABASE_URL: ""
+
+    ### Email Addresses
+    # email address from which data export emails are sent
+    ADMIN_EMAIL_DATA_EXPORT: ""
+
+    # email address to receive periodic export test results, if configured below
+    ADMIN_EMAIL_DATA_EXPORT_TEST: ""
+
+    # email address to receive backup email system test
+    ADMIN_EMAIL_EMAIL_TEST: ""
+
+    # array of email addresses to receive team notifications
+    ADMIN_EMAILS: []
+
+    # email address from which other emails are sent
+    POLIS_FROM_ADDRESS: team@example.com
+    
+    ### Boolean Flags
+    # (All can be left blank, or `false`)
+    
+    # Set to `true`, if Comment Translation was enabled, to instruct the server upon the next initialization (reboot) to backfill detected language of stored comments
+    BACKFILL_COMMENT_LANG_DETECTION: false
+
+    # Set this to `true` to instruct the API server to use LRU caching for results from the math service.
+    CACHE_MATH_RESULTS: true
+
+    # Set this to `true` to run periodic export tests, sent to the **`ADMIN_EMAIL_DATA_EXPORT_TEST`** address.
+    RUN_PERIODIC_EXPORT_TESTS: false
+
+    # Set this to `true` if using Google translation service
+    SHOULD_USE_TRANSLATION_API: false
+
+    ### URL/Hostname Settings
+    DOMAIN_WHITELIST_ITEM_01: ""
+    DOMAIN_WHITELIST_ITEM_02: ""
+    DOMAIN_WHITELIST_ITEM_03: ""
+    DOMAIN_WHITELIST_ITEM_04: ""
+    DOMAIN_WHITELIST_ITEM_05: ""
+    DOMAIN_WHITELIST_ITEM_06: ""
+    DOMAIN_WHITELIST_ITEM_07: ""
+    DOMAIN_WHITELIST_ITEM_08: ""
+    
+
+    ###### THIRD PARTY API CREDENTIALS ######
+    # These are all optional, but some features will not work without them.
+
+    # Comment spam detection and filtering
+    AKISMET_ANTISPAM_API_KEY: ""
+
+    # If using Amazon SES as an email transport
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+
+    # Used for S3 data import/export
+    AWS_REGION: ""
+    
+    # set to `true` to enable twitter widgets on the client-admin authentication pages
+    ENABLE_TWITTER_WIDGETS: false
+
+    # Must register with Facebook to get an ID to enable Facebook App connectivity
+    FB_APP_ID: ""
+
+    # For using Google Analytics on client pages
+    GA_TRACKING_ID: ""
+
+    # Required if using Google Translate API
+    GOOGLE_CREDENTIALS_BASE64: ""
+
+    # If using Mailgun as an email transport
+    MAILGUN_API_KEY: ""
+    MAILGUN_DOMAIN: ""
+
+    # If using IP Geolocation service Maxmind
+    MAXMIND_LICENSEKEY: ""
+    MAXMIND_USERID: ""
+    
+    # For Twitter integration
+    TWITTER_CONSUMER_KEY: ""
+    TWITTER_CONSUMER_SECRET: ""
+
+fileServer:
+  image:
+    repository: compdem/polis-file-server
+    tag: dev
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+  hpa:
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 50
+  env: {}
+
+math:
+  image:
+    repository: compdem/polis-math
+    tag: dev
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+  env: {}
+
+postgres:
+  enabled: true
+  image:
+    repository: compdem/polis-postgres
+    tag: dev
+  storage: 100Mi
+  env: {}
+
+ingress:
+  enabled: false
+  enableTls: false
+  annotations: {}
+  # ingressClassName:

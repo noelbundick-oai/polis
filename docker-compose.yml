@@ -24,7 +24,7 @@ services:
   server:
     env_file:
       - ${SERVER_ENV_FILE:-.env}
-    image: docker.io/compdem/polis-server:${TAG:-dev}
+    image: ${REGISTRY}/compdem/polis-server:${TAG:-dev}
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -45,7 +45,7 @@ services:
       - server-logs:/app/logs
 
   math:
-    image: docker.io/compdem/polis-math:${TAG:-dev}
+    image: ${REGISTRY}/compdem/polis-math:${TAG:-dev}
     depends_on:
       - "postgres"
     build:
@@ -61,7 +61,7 @@ services:
       - "polis-net"
 
   postgres:
-    image: docker.io/compdem/polis-postgres:${TAG:-dev}
+    image: ${REGISTRY}/compdem/polis-postgres:${TAG:-dev}
     restart: always
     build:
       context: ./server
@@ -79,7 +79,7 @@ services:
       - "postgres:/var/lib/postgresql/data"
 
   nginx-proxy:
-    image: docker.io/compdem/polis-nginx-proxy:${TAG:-dev}
+    image: ${REGISTRY}/compdem/polis-nginx-proxy:${TAG:-dev}
     build:
       context: ./file-server
       dockerfile: nginx.Dockerfile
@@ -94,7 +94,7 @@ services:
       - ${HTTPS_PORT:-443}:443
 
   file-server:
-    image: docker.io/compdem/polis-file-server:${TAG:-dev}
+    image: ${REGISTRY}/compdem/polis-file-server:${TAG:-dev}
     build:
       context: ./
       dockerfile: file-server/Dockerfile

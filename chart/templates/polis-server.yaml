@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    polis.service: server
+  name: server
+spec:
+  {{- if not .Values.polisServer.autoscaling.enabled }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      polis.service: server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        polis.service: server
+    spec:
+      containers:
+        - name: server
+          image: "{{ .Values.registry }}/{{ .Values.polisServer.image.repository }}:{{ .Values.polisServer.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: API_DEV_HOSTNAME
+              value: localhost
+            - name: API_PROD_HOSTNAME
+              value: "{{ .Values.hostname }}"
+            - name: API_SERVER_PORT
+              value: "5000"
+            - name: DOMAIN_OVERRIDE
+              value: "{{ .Values.hostname }}"
+            - name: DATABASE_URL
+              value: "postgres://{{ .Values.db.user }}:{{ .Values.db.password }}@{{ .Values.db.host }}:5432/{{ .Values.db.database }}"
+            - name: DEV_MODE
+              value: "false"
+            - name: EMBED_SERVICE_HOSTNAME
+              value: localhost
+            - name: MATH_ENV
+              value: prod
+            - name: STATIC_FILES_ADMIN_PORT
+              value: "8080"
+            - name: STATIC_FILES_HOST
+              value: file-server
+            - name: STATIC_FILES_PARTICIPATION_PORT
+              value: "8080"
+            - name: STATIC_FILES_PORT
+              value: "8080"
+            - name: SERVER_LOG_TO_FILE
+              value: "false"
+            {{- range $key, $value := .Values.polisServer.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /app/logs
+              name: server-logs
+      restartPolicy: Always
+      volumes:
+        - name: server-logs
+          persistentVolumeClaim:
+            claimName: server-logs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    polis.service: server
+  name: server-logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+{{- if .Values.polisServer.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: server
+spec:
+  maxReplicas: {{ .Values.polisServer.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.polisServer.autoscaling.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: server
+  targetCPUUtilizationPercentage: {{ .Values.polisServer.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    polis.service: server
+  name: server
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    polis.service: server

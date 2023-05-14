@@ -10,6 +10,7 @@ BASEURL ?= https://127.0.0.1.sslip.io
 E2E_RUN = cd e2e; CYPRESS_BASE_URL=$(BASEURL)
 export ENV_FILE = .env
 export TAG = $(shell grep -e ^TAG ${ENV_FILE} | awk -F'[=]' '{gsub(/ /,""); print $$2}')
+export REGISTRY = $(shell grep -e ^REGISTRY ${ENV_FILE} | awk -F'[=]' '{gsub(/ /,""); print $$2}')
 export GIT_HASH = $(shell git rev-parse --short HEAD)
 export COMPOSE_FILE_ARGS = -f docker-compose.yml -f docker-compose.dev.yml
 
@@ -25,6 +26,7 @@ TEST: ## Run in test mode (e.g. `make TEST start`, etc.)
 
 echo_vars:
 	@echo ENV_FILE=${ENV_FILE}
+	@echo REGISTRY=${REGISTRY}
 	@echo TAG=${TAG}
 
 pull: echo_vars ## Pull most recent Docker container builds (nightlies)
@@ -59,6 +61,10 @@ build: echo_vars ## [Re]Build all Docker containers
 
 build-no-cache: echo_vars ## Build all Docker containers without cache
 	docker compose ${COMPOSE_FILE_ARGS} --env-file ${ENV_FILE} build --no-cache
+
+build-and-push: echo_vars ## Build and push all Docker images
+	docker compose ${COMPOSE_FILE_ARGS} --env-file ${ENV_FILE} build
+	docker compose push
 
 start-recreate: echo_vars ## Start all Docker containers with recreated environments
 	docker compose ${COMPOSE_FILE_ARGS} --env-file ${ENV_FILE} up --force-recreate

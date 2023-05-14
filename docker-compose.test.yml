@@ -9,7 +9,7 @@
 
 services:
   maildev:
-    image: docker.io/maildev/maildev:1.1.1
+    image: ${REGISTRY}/maildev/maildev:1.1.1
     labels:
       polis_tag: ${TAG}
     networks:

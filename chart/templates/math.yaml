@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    polis.service: math
+  name: math
+spec:
+  {{- if not .Values.math.autoscaling.enabled }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      polis.service: math
+  template:
+    metadata:
+      labels:
+        polis.service: math
+    spec:
+      containers:
+        - name: math
+          image: "{{ .Values.registry }}/{{ .Values.math.image.repository }}:{{ .Values.math.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: MATH_ENV
+              value: prod
+            - name: DATABASE_URL
+              value: "postgres://{{ .Values.db.user }}:{{ .Values.db.password }}@{{ .Values.db.host }}:5432/{{ .Values.db.database }}"
+            {{- range $key, $value := .Values.math.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+---
+{{- if .Values.math.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: math
+spec:
+  maxReplicas: {{ .Values.math.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.math.autoscaling.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: math
+  targetCPUUtilizationPercentage: {{ .Values.math.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
