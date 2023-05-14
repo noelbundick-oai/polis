@@ -37,6 +37,9 @@ spec:
               value: "false"
             - name: EMBED_SERVICE_HOSTNAME
               value: localhost
+            # 2023-05-13: deprecated but still required
+            - name: ENCRYPTION_PASSWORD_00001
+              value: ""
             - name: MATH_ENV
               value: prod
             - name: STATIC_FILES_ADMIN_PORT
