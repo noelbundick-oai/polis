@@ -32,7 +32,10 @@ spec:
             - name: DOMAIN_OVERRIDE
               value: "{{ .Values.hostname }}"
             - name: DATABASE_URL
-              value: "postgres://{{ .Values.db.user }}:{{ .Values.db.password }}@{{ .Values.db.host }}:5432/{{ .Values.db.database }}"
+              valueFrom:
+                secretKeyRef:
+                  name: database-url
+                  key: DATABASE_URL
             - name: DEV_MODE
               value: "false"
             - name: EMBED_SERVICE_HOSTNAME

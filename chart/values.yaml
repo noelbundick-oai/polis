@@ -6,6 +6,7 @@ db:
   database: polis-dev
   user: postgres
   password: oiPorg3Nrz0yqDLE
+  port: 5432
 
 polisServer:
   image: 
