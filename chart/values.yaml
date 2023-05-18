@@ -77,7 +77,7 @@ polisServer:
     ###### THIRD PARTY API CREDENTIALS ######
     # These are all optional, but some features will not work without them.
 
-    # Comment spam detection and filtering
+    # Comment spam detection and filtering. If set to `OPTOUT`, spam filtering will be disabled.
     AKISMET_ANTISPAM_API_KEY: ""
 
     # If using Amazon SES as an email transport

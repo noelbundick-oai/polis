@@ -154,13 +154,15 @@ let akismet = akismetLib.client({
   apiKey: Config.akismetAntispamApiKey,
 });
 
-akismet.verifyKey(function (err: any, verified: any) {
-  if (verified) {
-    logger.debug("Akismet: API key successfully verified.");
-  } else {
-    logger.debug("Akismet: Unable to verify API key.");
-  }
-});
+if (Config.akismetAntispamApiKey !== "OPTOUT") {
+  akismet.verifyKey(function (err: any, verified: any) {
+    if (verified) {
+      logger.debug("Akismet: API key successfully verified.");
+    } else {
+      logger.debug("Akismet: Unable to verify API key.");
+    }
+  });
+}
 // let SELF_HOSTNAME = Config.getServerHostname();
 
 function isSpam(o: {
@@ -176,13 +178,17 @@ function isSpam(o: {
   return new MPromise(
     "isSpam",
     function (resolve: (arg0: any) => void, reject: (arg0: any) => void) {
-      akismet.checkSpam(o, function (err: any, spam: any) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(spam);
-        }
-      });
+      if (Config.akismetAntispamApiKey === "OPTOUT") {
+        resolve(false);
+      } else {
+        akismet.checkSpam(o, function (err: any, spam: any) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(spam);
+          }
+        });
+      }
     }
   );
 }
